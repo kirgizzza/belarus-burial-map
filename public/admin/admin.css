@@ -11,6 +11,10 @@ body {
   color: #e5e7eb;
 }
 
+.admin--hidden {
+  display: none !important;
+}
+
 .admin__login {
   min-height: 100vh;
   display: grid;
