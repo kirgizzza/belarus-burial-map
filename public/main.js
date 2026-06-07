@@ -1,4 +1,4 @@
-﻿// main.js — карта захоронений (данные из Supabase)
+// main.js — карта захоронений (данные из Supabase)
 
 (function () {
   const belarusBounds = L.latLngBounds([51.2, 23.0], [56.2, 33.0]);
