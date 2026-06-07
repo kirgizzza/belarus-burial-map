@@ -1,6 +1,23 @@
 // main.js — карта захоронений (данные из Supabase)
 
 (function () {
+  const hero = document.getElementById("hero-splash");
+
+  function hideHero() {
+    if (!hero) return;
+    hero.classList.add("hero-splash--hidden");
+    setTimeout(() => hero?.parentElement?.removeChild(hero), 700);
+  }
+
+  if (hero) {
+    setTimeout(hideHero, 2200);
+  }
+
+  if (typeof L === "undefined") {
+    console.error("Leaflet не загрузился — карта не может отобразиться");
+    return;
+  }
+
   const belarusBounds = L.latLngBounds([51.2, 23.0], [56.2, 33.0]);
 
   async function loadBurials() {
@@ -230,14 +247,7 @@
 
   new SoundControl({ position: "bottomleft" }).addTo(map);
 
-  const hero = document.getElementById("hero-splash");
-  function hideHero() {
-    if (!hero) return;
-    hero.classList.add("hero-splash--hidden");
-    setTimeout(() => hero?.parentElement?.removeChild(hero), 700);
-  }
   if (hero) {
-    setTimeout(hideHero, 2200);
     map.once("click", hideHero);
     map.once("movestart", hideHero);
     searchInput?.addEventListener("focus", hideHero, { once: true });
