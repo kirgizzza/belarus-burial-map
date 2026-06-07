@@ -1,253 +1,623 @@
-// main.js — карта захоронений (данные из Supabase)
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-(function () {
-  const belarusBounds = L.latLngBounds([51.2, 23.0], [56.2, 33.0]);
+html,
+body {
+  height: 100%;
+}
 
-  async function loadBurials() {
-    if (window.BurialDB?.isConfigured()) {
-      try {
-        const data = await window.BurialDB.fetchBurials();
-        console.log("Загружено " + data.length + " записей из Supabase");
-        return data;
-      } catch (e) {
-        console.error("Ошибка загрузки из Supabase:", e);
-      }
-    }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+  color: #e5e7eb;
+}
 
-    if (typeof burials !== "undefined" && Array.isArray(burials) && burials.length > 0) {
-      console.warn("Supabase не настроен — используются локальные данные из burials-data.js");
-      return burials;
-    }
+.hero-splash {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 15;
+  pointer-events: none;
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.96));
+  animation: heroFadeIn 600ms ease-out forwards;
+}
 
-    console.warn("Нет данных для отображения");
-    return [];
+.hero-splash__inner {
+  text-align: center;
+  padding: 20px 32px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top, rgba(148, 163, 184, 0.08), transparent 60%),
+    rgba(15, 23, 42, 0.9);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(24px);
+}
+
+.hero-splash__label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.hero-splash__title {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f9fafb;
+  margin-bottom: 6px;
+}
+
+.hero-splash__subtitle {
+  font-size: 13px;
+  color: #e5e7eb;
+  opacity: 0.86;
+}
+
+.hero-splash--hidden {
+  animation: heroFadeOut 600ms ease-in forwards;
+}
+
+@keyframes heroFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heroFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.topbar {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: min(720px, 95vw);
+  pointer-events: none;
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.88));
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.9),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(22px);
+  pointer-events: auto;
+}
+
+.topbar__brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e5e7eb;
+}
+
+.topbar__subtitle {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.topbar__search {
+  flex: 1;
+  position: relative;
+}
+
+.topbar__admin-link {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  white-space: nowrap;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.topbar__admin-link:hover {
+  border-color: rgba(248, 113, 113, 0.95);
+  background: rgba(248, 113, 113, 0.2);
+  color: #fecaca;
+}
+
+.topbar__search-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.85));
+  color: #e5e7eb;
+  font-size: 13px;
+  outline: none;
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.9),
+    0 12px 30px rgba(15, 23, 42, 0.85);
+}
+
+.topbar__search-input::placeholder {
+  color: #6b7280;
+}
+
+.topbar__search-input:focus {
+  border-color: #f97373;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.95),
+    0 16px 40px rgba(15, 23, 42, 0.95);
+}
+
+.topbar__results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  list-style: none;
+  background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.96));
+  border-radius: 14px;
+  border: 1px solid rgba(30, 64, 175, 0.8);
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.95),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px 0;
+  margin: 0;
+  display: none;
+}
+
+.topbar__results--visible {
+  display: block;
+}
+
+.topbar__result-item {
+  padding: 6px 11px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar__result-item:hover {
+  background: linear-gradient(to right, rgba(248, 113, 113, 0.22), rgba(59, 130, 246, 0.24));
+}
+
+.topbar__result-title {
+  font-weight: 500;
+}
+
+.topbar__result-location {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+#map {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  min-height: 360px;
+  z-index: 0;
+}
+
+.info {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(720px, 95vw);
+  height: 100vh;
+  max-height: 100vh;
+  background:
+    linear-gradient(150deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.35)),
+    url("granite.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-top: 1px solid rgba(148, 163, 184, 0.85);
+  box-shadow:
+    0 -18px 45px rgba(15, 23, 42, 0.85),
+    0 0 0 1px rgba(15, 23, 42, 0.75) inset;
+  padding: 18px 20px 20px;
+  overflow-y: auto;
+  transition:
+    transform 550ms cubic-bezier(0.16, 0.84, 0.24, 1.02),
+    opacity 420ms ease-out;
+  z-index: 30;
+  will-change: transform, opacity;
+}
+
+.info--hidden {
+  transform: translateX(-50%) translateY(100%);
+  opacity: 0;
+}
+
+.info__handle {
+  width: 46px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.9);
+  margin: 0 auto 8px;
+}
+
+.info__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  color: #f9fafb;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 999px;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    transform 120ms ease-out;
+}
+
+.info__close:hover {
+  background: rgba(15, 23, 42, 0.4);
+  color: #fefce8;
+  transform: scale(1.03);
+}
+
+.info__content {
+  margin-top: 8px;
+  padding-bottom: 88px;
+}
+
+.info__title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: #f9fafb;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.75),
+    0 0 1px rgba(0, 0, 0, 0.9);
+}
+
+.info__location {
+  font-size: 14px;
+  color: #e5e7eb;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.info__description {
+  font-size: 14px;
+  color: #f3f4f6;
+  line-height: 1.6;
+  margin-bottom: 14px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.info__section {
+  margin-top: 10px;
+}
+
+.info__section-title {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e5e7eb;
+  margin-bottom: 8px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.info__person-search {
+  margin-bottom: 8px;
+}
+
+.info__person-search-input {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.75);
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 13px;
+  outline: none;
+}
+
+.info__person-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.info__person-search-input:focus {
+  border-color: #f97373;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.8),
+    0 10px 24px rgba(15, 23, 42, 0.85);
+}
+
+.info__list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.info__person {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.86);
+  border: 1px solid rgba(15, 23, 42, 0.9);
+  box-shadow:
+    0 10px 25px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(243, 244, 246, 0.9) inset;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info__person-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #fefce8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 1px rgba(0, 0, 0, 0.9);
+}
+
+.info__person-meta {
+  font-size: 12px;
+  color: #e5e7eb;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.leaflet-container {
+  background: #020617;
+}
+
+.leaflet-control-zoom a {
+  border-radius: 999px;
+  border: none !important;
+}
+
+.leaflet-bottom.leaflet-left {
+  margin-bottom: 16px;
+  margin-left: 12px;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+.leaflet-bar a:hover {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+.map-marker {
+  background: radial-gradient(circle at top, #fecaca 0, #ef4444 42%, #7f1d1d 100%);
+  border-radius: 999px;
+  width: 14px;
+  height: 14px;
+  box-shadow:
+    0 0 0 2px rgba(254, 202, 202, 0.9),
+    0 0 20px rgba(248, 113, 113, 0.85);
+  border: 1px solid rgba(127, 29, 29, 0.9);
+}
+
+.map-marker--pulse::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  border: 1px solid rgba(248, 113, 113, 0.8);
+  opacity: 0;
+  animation: pulse 1.7s ease-out infinite;
+}
+
+.sound-control {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.sound-control__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-decoration: none;
+  font-size: 16px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #e5e7eb;
+}
+
+.sound-control__button:hover {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fecaca;
+}
+
+.sound-control__button--active {
+  background: radial-gradient(circle at top, #fecaca 0, #ef4444 48%, #7f1d1d 100%);
+  color: #fef2f2;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.65;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    top: max(10px, env(safe-area-inset-top, 0px));
+    width: 96vw;
   }
 
-  const map = L.map("map", {
-    zoomControl: true,
-    minZoom: 6,
-    maxBounds: belarusBounds,
-    maxBoundsViscosity: 1.0,
-  }).setView([53.7, 27.9], 7);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(map);
-
-  map.zoomControl.setPosition("bottomleft");
-
-  const infoPanel = document.getElementById("info-panel");
-  const infoToggle = document.getElementById("info-toggle");
-  const infoTitle = infoPanel?.querySelector(".info__title");
-  const infoLocation = infoPanel?.querySelector(".info__location");
-  const infoDescription = infoPanel?.querySelector(".info__description");
-  const infoList = document.getElementById("info-list");
-  const infoClose = document.getElementById("info-close");
-  const searchInput = document.getElementById("city-search");
-  const searchResults = document.getElementById("search-results");
-  const personSearchInput = document.getElementById("person-search");
-
-  let activeBurials = [];
-  let currentPersons = [];
-  let markers = [];
-
-  function escapeHtml(str) {
-    if (!str) return "";
-    return str.replace(/[&<>]/g, function (m) {
-      if (m === "&") return "&amp;";
-      if (m === "<") return "&lt;";
-      if (m === ">") return "&gt;";
-      return m;
-    });
+  .topbar__inner {
+    padding-inline: 10px;
   }
 
-  function renderPersons(filter) {
-    const query = (filter || "").trim().toLowerCase();
-    if (!infoList) return;
-    infoList.innerHTML = "";
-
-    const source = currentPersons;
-    const filtered = query
-      ? source.filter((p) => (p.name || "").toLowerCase().includes(query))
-      : source;
-
-    if (!filtered.length) {
-      const li = document.createElement("li");
-      li.className = "info__person";
-      li.innerHTML = '<div class="info__person-name">По данному запросу ничего не найдено</div>';
-      infoList.appendChild(li);
-      return;
-    }
-
-    filtered.forEach((person) => {
-      const li = document.createElement("li");
-      li.className = "info__person";
-      li.innerHTML = `
-        <div class="info__person-name">${escapeHtml(person.name || "Неизвестный")}</div>
-        ${person.years || person.note ? `<div class="info__person-meta">${escapeHtml(person.years || "")} ${escapeHtml(person.note || "")}</div>` : ""}
-      `;
-      infoList.appendChild(li);
-    });
+  .topbar__brand {
+    display: none;
   }
 
-  function openInfo(burial) {
-    if (!infoTitle || !infoLocation || !infoDescription) return;
-    infoTitle.textContent = burial.title || "Воинское захоронение";
-    infoLocation.textContent = burial.location || "";
-    infoDescription.textContent = burial.description || "Информация уточняется.";
-
-    currentPersons = burial.persons || [];
-    if (personSearchInput) personSearchInput.value = "";
-    renderPersons("");
-    infoPanel?.classList.remove("info--hidden");
-    infoToggle?.classList.remove("info-toggle--hidden");
+  body.info-open .topbar {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-140%);
+    transition: opacity 200ms ease, transform 280ms ease;
   }
 
-  function closeInfo() {
-    infoPanel?.classList.add("info--hidden");
-    infoToggle?.classList.add("info-toggle--hidden");
+  .info {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 12px));
+    transform: translateY(0);
+    border-radius: 20px 20px 0 0;
+    padding:
+      calc(14px + env(safe-area-inset-top, 0px))
+      16px
+      calc(16px + env(safe-area-inset-bottom, 0px));
   }
 
-  if (infoClose) infoClose.addEventListener("click", closeInfo);
-  if (infoToggle) infoToggle.addEventListener("click", closeInfo);
-
-  map.on("click", () => {
-    if (!infoPanel?.classList.contains("info--hidden")) closeInfo();
-    if (searchResults) {
-      searchResults.classList.remove("topbar__results--visible");
-      searchResults.innerHTML = "";
-    }
-  });
-
-  function focusOnBurial(burial) {
-    if (!burial || !burial.coordinates) return;
-    map.flyTo(burial.coordinates, Math.max(map.getZoom(), 9), { duration: 0.7 });
-    openInfo(burial);
+  .info--hidden {
+    transform: translateY(100%);
   }
 
-  function renderMarkers(burials) {
-    markers.forEach((m) => map.removeLayer(m));
-    markers = [];
-
-    burials.forEach((burial) => {
-      if (!burial.coordinates || burial.coordinates.length !== 2) return;
-
-      const marker = L.marker(burial.coordinates, {
-        icon: L.divIcon({
-          className: "",
-          html: '<div class="map-marker map-marker--pulse"></div>',
-          iconSize: [18, 18],
-          iconAnchor: [9, 9],
-        }),
-      }).addTo(map);
-
-      marker.on("click", (e) => {
-        e.originalEvent.stopPropagation();
-        focusOnBurial(burial);
-      });
-
-      markers.push(marker);
-    });
-
-    console.log("Отображено маркеров: " + markers.length);
+  .info__content {
+    margin-top: 4px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
-  function setupSearch() {
-    if (!searchInput || !searchResults) return;
-
-    const getLabel = (b) => (b.title + " " + b.location).toLowerCase();
-
-    searchInput.addEventListener("input", () => {
-      const query = searchInput.value.trim().toLowerCase();
-      searchResults.innerHTML = "";
-      if (!query) {
-        searchResults.classList.remove("topbar__results--visible");
-        return;
-      }
-      const matches = activeBurials.filter((b) => getLabel(b).includes(query)).slice(0, 8);
-      if (!matches.length) {
-        searchResults.classList.remove("topbar__results--visible");
-        return;
-      }
-      matches.forEach((burial) => {
-        const li = document.createElement("li");
-        li.className = "topbar__result-item";
-        li.innerHTML = `
-          <span class="topbar__result-title">${escapeHtml(burial.title || "Воинское захоронение")}</span>
-          ${burial.location ? `<span class="topbar__result-location">${escapeHtml(burial.location)}</span>` : ""}
-        `;
-        li.addEventListener("click", () => {
-          focusOnBurial(burial);
-          searchInput.value = burial.title || burial.location || "";
-          searchResults.classList.remove("topbar__results--visible");
-          searchResults.innerHTML = "";
-        });
-        searchResults.appendChild(li);
-      });
-      searchResults.classList.add("topbar__results--visible");
-    });
-
-    searchInput.addEventListener("blur", () => {
-      setTimeout(() => searchResults.classList.remove("topbar__results--visible"), 180);
-    });
+  .info__title {
+    font-size: 18px;
+    line-height: 1.3;
+    padding-right: 36px;
   }
 
-  if (personSearchInput) {
-    personSearchInput.addEventListener("input", () => renderPersons(personSearchInput.value));
+  .info__close {
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: 12px;
   }
 
-  const metronome = new Audio("silent.mp3");
-  metronome.loop = true;
-  let soundButton = null;
-
-  function toggleSound() {
-    if (!soundButton) return;
-    if (metronome.paused) {
-      metronome.play().then(() => soundButton.classList.add("sound-control__button--active")).catch(() => {});
-    } else {
-      metronome.pause();
-      soundButton.classList.remove("sound-control__button--active");
-    }
+  .info-toggle {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - 32px);
+    font-size: 12px;
+    padding: 10px 14px;
   }
 
-  const SoundControl = L.Control.extend({
-    onAdd: function () {
-      const container = L.DomUtil.create("div", "leaflet-bar sound-control");
-      const btn = L.DomUtil.create("a", "sound-control__button", container);
-      btn.href = "#";
-      btn.title = "Включить/выключить звук метронома";
-      btn.innerHTML = "♪";
-      soundButton = btn;
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.on(btn, "click", (e) => {
-        L.DomEvent.preventDefault(e);
-        toggleSound();
-      });
-      return container;
-    },
-  });
-
-  new SoundControl({ position: "bottomleft" }).addTo(map);
-
-  const hero = document.getElementById("hero-splash");
-  function hideHero() {
-    if (!hero) return;
-    hero.classList.add("hero-splash--hidden");
-    setTimeout(() => hero?.parentElement?.removeChild(hero), 700);
-  }
-  if (hero) {
-    setTimeout(hideHero, 2200);
-    map.once("click", hideHero);
-    map.once("movestart", hideHero);
-    searchInput?.addEventListener("focus", hideHero, { once: true });
-    infoToggle?.addEventListener("click", hideHero, { once: true });
+  .topbar__search-input {
+    font-size: 16px;
   }
 
-  setupSearch();
+  .info__person-search-input {
+    font-size: 16px;
+  }
+}
 
-  loadBurials().then((burials) => {
-    activeBurials = burials;
-    renderMarkers(activeBurials);
-  });
-})();
+.info-toggle--hidden {
+  display: none;
+}
+
+.info-toggle {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 40;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  background: radial-gradient(circle at top, #fecaca 0, #ef4444 48%, #7f1d1d 100%);
+  color: #fef2f2;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 15px 30px rgba(248, 113, 113, 0.5),
+    0 0 0 1px rgba(127, 29, 29, 0.9);
+  transition:
+    transform 120ms ease-out,
+    box-shadow 150ms ease-out,
+    filter 150ms ease-out;
+}
+
+.info-toggle:hover {
+  transform: translateX(-50%) translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    0 20px 35px rgba(248, 113, 113, 0.6),
+    0 0 0 1px rgba(127, 29, 29, 0.9);
+}
+
+.info-toggle:active {
+  transform: translateX(-50%) translateY(1px) scale(0.99);
+  box-shadow:
+    0 10px 20px rgba(15, 23, 42, 0.7),
+    0 0 0 1px rgba(127, 29, 29, 0.9);
+}
+
