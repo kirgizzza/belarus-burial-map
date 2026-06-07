@@ -9,6 +9,7 @@
   const loginPanel = document.getElementById("login-panel");
   const adminApp = document.getElementById("admin-app");
   const loginForm = document.getElementById("login-form");
+  const loginBtn = document.getElementById("login-btn");
   const loginEmail = document.getElementById("login-email");
   const loginPassword = document.getElementById("login-password");
   const loginError = document.getElementById("login-error");
@@ -30,9 +31,22 @@
     personsLines: document.getElementById("persons-lines"),
   };
 
+  function formatError(err) {
+    if (!err) return "Неизвестная ошибка";
+    if (typeof err === "string") return err;
+    return err.message || String(err);
+  }
+
   function showLoginError(msg) {
-    loginError.textContent = msg;
-    loginError.hidden = !msg;
+    const text = msg ? formatError(msg) : "";
+    loginError.textContent = text;
+    loginError.hidden = !text;
+  }
+
+  function setLoginLoading(loading) {
+    if (!loginBtn) return;
+    loginBtn.disabled = loading;
+    loginBtn.textContent = loading ? "Вход..." : "Войти";
   }
 
   function showStatus(msg, isError) {
@@ -48,8 +62,8 @@
   }
 
   function showAdminUI(show) {
-    loginPanel.hidden = show;
-    adminApp.hidden = !show;
+    loginPanel.classList.toggle("admin--hidden", show);
+    adminApp.classList.toggle("admin--hidden", !show);
   }
 
   function getById(id) {
@@ -74,7 +88,13 @@
   }
 
   function initMap() {
-    if (map) return;
+    if (map) {
+      map.invalidateSize();
+      return;
+    }
+    if (!mapEl || typeof L === "undefined") {
+      throw new Error("Карта не загрузилась. Обновите страницу.");
+    }
     map = L.map(mapEl).setView([53.7, 27.9], 7);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap",
@@ -85,7 +105,7 @@
       setMapPoint([e.latlng.lat, e.latlng.lng], true);
       showStatus("Координаты выбраны", false);
     });
-    setTimeout(() => map.invalidateSize(), 100);
+    setTimeout(() => map.invalidateSize(), 200);
   }
 
   function setMapPoint(coords, recenter) {
@@ -177,23 +197,43 @@
       }
       await loadBurials();
     } catch (err) {
-      showStatus(err.message || "Ошибка сохранения", true);
+      showStatus(formatError(err) || "Ошибка сохранения", true);
     }
   }
 
-  loginForm.onsubmit = async (e) => {
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     showLoginError("");
+
+    if (!window.BurialDB) {
+      showLoginError("Не загрузился supabase-client.js. Проверьте консоль браузера (F12).");
+      return;
+    }
+
+    setLoginLoading(true);
     try {
       if (!window.BurialDB.isConfigured()) {
-        throw new Error("Настройте public/config.js");
+        throw new Error("Не настроен config.js. Проверьте ключи Supabase на GitHub.");
       }
-      await window.BurialDB.signIn(loginEmail.value.trim(), loginPassword.value);
+
+      const result = await window.BurialDB.signIn(
+        loginEmail.value.trim(),
+        loginPassword.value
+      );
+
+      if (!result?.session) {
+        throw new Error("Вход не выполнен. Проверьте email и подтверждение пользователя в Supabase.");
+      }
+
       await startAdmin();
+      showLoginError("");
     } catch (err) {
-      showLoginError(err.message || "Неверный email или пароль");
+      console.error("Ошибка входа:", err);
+      showLoginError(formatError(err) || "Неверный email или пароль");
+    } finally {
+      setLoginLoading(false);
     }
-  };
+  });
 
   logoutBtn.onclick = async () => {
     try {
@@ -201,7 +241,7 @@
       showAdminUI(false);
       loginPassword.value = "";
     } catch (err) {
-      showStatus(err.message, true);
+      showStatus(formatError(err), true);
     }
   };
 
@@ -218,7 +258,7 @@
       await loadBurials();
       showStatus("Новая запись создана", false);
     } catch (err) {
-      showStatus(err.message || "Ошибка создания", true);
+      showStatus(formatError(err) || "Ошибка создания", true);
     }
   };
 
@@ -231,36 +271,48 @@
       await loadBurials();
       showStatus("Запись удалена", false);
     } catch (err) {
-      showStatus(err.message || "Ошибка удаления", true);
+      showStatus(formatError(err) || "Ошибка удаления", true);
     }
   };
 
-  form.onsubmit = (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     saveCurrent();
-  };
+  });
 
   async function startAdmin() {
     showAdminUI(true);
-    initMap();
+
+    // Карта инициализируется после того, как блок стал видимым
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 50)));
+
     try {
+      initMap();
       await loadBurials();
       showStatus("Данные загружены", false);
     } catch (err) {
-      showStatus(err.message || "Не удалось загрузить данные", true);
+      console.error("Ошибка загрузки админки:", err);
+      showStatus(formatError(err) || "Не удалось загрузить данные", true);
     }
   }
 
   async function init() {
-    if (!window.BurialDB.isConfigured()) {
-      showLoginError("Настройте public/config.js — см. SETUP.md");
+    if (!window.BurialDB) {
+      showLoginError("Ошибка загрузки скриптов. Откройте консоль (F12) и проверьте ошибки.");
       return;
     }
+
+    if (!window.BurialDB.isConfigured()) {
+      showLoginError("Не настроен config.js. Добавьте ключи Supabase в GitHub Secrets и перезапустите деплой.");
+      return;
+    }
+
     try {
       const session = await window.BurialDB.getSession();
       if (session) await startAdmin();
     } catch (err) {
-      showLoginError(err.message);
+      console.error("Ошибка проверки сессии:", err);
+      showLoginError(formatError(err));
     }
   }
 
