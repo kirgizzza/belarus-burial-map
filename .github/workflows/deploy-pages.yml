@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare config.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            node scripts/generate-config.js
+          elif [ ! -f public/config.js ]; then
+            echo "Добавьте secrets SUPABASE_URL и SUPABASE_ANON_KEY, или закоммитьте public/config.js"
+            exit 1
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
