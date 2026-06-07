@@ -92,7 +92,7 @@
     const supabase = getClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    return data;
+    return { user: data.user, session: data.session };
   }
 
   async function signOut() {
