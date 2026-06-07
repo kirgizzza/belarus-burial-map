@@ -8,7 +8,7 @@
 
 html,
 body {
-  height: 100%;
+  height: 95%;
 }
 
 body {
@@ -16,7 +16,83 @@ body {
   background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
   color: #e5e7eb;
 }
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Карта воинских захоронений Беларуси</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar__inner">
+      <div class="topbar__brand">
+        <span class="topbar__title">Память Беларуси</span>
+        <span class="topbar__subtitle">Карта воинских захоронений</span>
+      </div>
+      <div class="topbar__search">
+        <input
+          id="city-search"
+          class="topbar__search-input"
+          type="text"
+          placeholder="Поиск города или места захоронения"
+          autocomplete="off"
+        />
+        <ul id="search-results" class="topbar__results"></ul>
+      </div>
+    </div>
+  </div>
 
+  <div id="hero-splash" class="hero-splash">
+    <div class="hero-splash__inner">
+      <div class="hero-splash__label">ПРОЕКТ ПАМЯТИ</div>
+      <div class="hero-splash__title">Белорусские захоронения</div>
+      <div class="hero-splash__subtitle">
+        Карта мест воинской славы времён Великой Отечественной войны
+      </div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <button id="info-toggle" class="info-toggle info-toggle--hidden" type="button">
+    Свернуть информацию
+  </button>
+
+  <aside id="info-panel" class="info info--hidden">
+    <div class="info__handle"></div>
+    <button id="info-close" class="info__close" aria-label="Закрыть окно">&times;</button>
+    <div class="info__content">
+      <h2 class="info__title"></h2>
+      <p class="info__location"></p>
+      <p class="info__description"></p>
+
+      <div class="info__section">
+        <h3 class="info__section-title">Захоронены в этом месте</h3>
+        <div class="info__person-search">
+          <input
+            id="person-search"
+            class="info__person-search-input"
+            type="text"
+            placeholder="Поиск солдата по ФИО"
+            autocomplete="off"
+          />
+        </div>
+        <ul class="info__list" id="info-list"></ul>
+      </div>
+    </div>
+  </aside>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="burials-data.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
 .hero-splash {
   position: fixed;
   inset: 0;
