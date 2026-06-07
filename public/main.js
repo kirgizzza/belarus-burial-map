@@ -505,8 +505,22 @@ body {
 }
 
 @media (max-width: 900px) {
+  .info {
+    left: 0;
+    right: 0;
+    width: 100vw;
+    transform: translateY(0);
+    height: 100vh;
+    max-height: 100vh;
+    padding-top: 28px;
+  }
+
+  .info--hidden {
+    transform: translateY(100%);
+  }
+
   .topbar {
-    top: max(10px, env(safe-area-inset-top, 0px));
+    top: 10px;
     width: 96vw;
   }
 
@@ -516,64 +530,6 @@ body {
 
   .topbar__brand {
     display: none;
-  }
-
-  body.info-open .topbar {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-50%) translateY(-140%);
-    transition: opacity 200ms ease, transform 280ms ease;
-  }
-
-  .info {
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    width: 100%;
-    height: auto;
-    max-height: min(88dvh, calc(100dvh - env(safe-area-inset-top, 0px) - 12px));
-    transform: translateY(0);
-    border-radius: 20px 20px 0 0;
-    padding:
-      calc(14px + env(safe-area-inset-top, 0px))
-      16px
-      calc(16px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .info--hidden {
-    transform: translateY(100%);
-  }
-
-  .info__content {
-    margin-top: 4px;
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .info__title {
-    font-size: 18px;
-    line-height: 1.3;
-    padding-right: 36px;
-  }
-
-  .info__close {
-    top: calc(10px + env(safe-area-inset-top, 0px));
-    right: 12px;
-  }
-
-  .info-toggle {
-    bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-    max-width: calc(100vw - 32px);
-    font-size: 12px;
-    padding: 10px 14px;
-  }
-
-  .topbar__search-input {
-    font-size: 16px;
-  }
-
-  .info__person-search-input {
-    font-size: 16px;
   }
 }
 
