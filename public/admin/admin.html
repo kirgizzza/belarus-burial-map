@@ -19,14 +19,14 @@
         <label class="admin__label" for="login-password">Пароль</label>
         <input id="login-password" class="admin__input" type="password" required autocomplete="current-password" />
 
-        <button class="admin__btn admin__btn--primary" type="submit">Войти</button>
+        <button id="login-btn" class="admin__btn admin__btn--primary" type="submit">Войти</button>
       </form>
       <p id="login-error" class="admin__status admin__status--error" hidden></p>
       <a class="admin__btn admin__btn--secondary" href="../index.html">← На карту</a>
     </div>
   </section>
 
-  <main id="admin-app" class="admin" hidden>
+  <main id="admin-app" class="admin admin--hidden">
     <header class="admin__header">
       <div class="admin__header-row">
         <div>
