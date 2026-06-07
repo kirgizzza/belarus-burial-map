@@ -1,0 +1,235 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  color: #e5e7eb;
+}
+
+.admin__login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.admin__login-card {
+  width: min(420px, 95vw);
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.admin {
+  width: min(860px, 95vw);
+  margin: 24px auto;
+  display: grid;
+  gap: 14px;
+}
+
+.admin__header {
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.admin__header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin__title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.admin__subtitle {
+  margin: 8px 0 0;
+  color: #9ca3af;
+}
+
+.admin__panel {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.admin__form {
+  display: grid;
+  gap: 10px;
+}
+
+.admin__label {
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.admin__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  display: grid;
+  gap: 6px;
+}
+
+.admin__list-item {
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(2, 6, 23, 0.8);
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin__list-item:hover {
+  border-color: rgba(248, 113, 113, 0.7);
+}
+
+.admin__list-item--active {
+  border-color: rgba(248, 113, 113, 0.95);
+  background: rgba(127, 29, 29, 0.35);
+}
+
+.admin__input,
+.admin__select,
+.admin__textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  background: rgba(2, 6, 23, 0.85);
+  color: #e5e7eb;
+  font-size: 14px;
+  padding: 9px 10px;
+}
+
+.admin__input:focus,
+.admin__select:focus,
+.admin__textarea:focus {
+  outline: none;
+  border-color: #f87171;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.7);
+}
+
+.admin__textarea {
+  resize: vertical;
+}
+
+.admin__textarea--mono {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.admin__map {
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+.leaflet-container {
+  background: #020617;
+}
+
+.admin__coords {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin__controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.admin__btn {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #f8fafc;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 9px 12px;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  display: inline-block;
+}
+
+.admin__btn--primary {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+}
+
+.admin__btn--primary:hover {
+  background: linear-gradient(180deg, #f87171, #dc2626);
+  transform: translateY(-1px);
+}
+
+.admin__btn--secondary {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: rgba(148, 163, 184, 0.65);
+}
+
+.admin__btn--secondary:hover {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.admin__btn--danger {
+  background: linear-gradient(180deg, #991b1b, #7f1d1d);
+}
+
+.admin__btn--danger:hover {
+  background: linear-gradient(180deg, #b91c1c, #991b1b);
+  transform: translateY(-1px);
+}
+
+.admin__status {
+  min-height: 24px;
+  margin: 0;
+  color: #a7f3d0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.admin__status--error {
+  color: #fecaca;
+}
+
+@media (max-width: 720px) {
+  .admin__coords {
+    grid-template-columns: 1fr;
+  }
+
+  .admin__controls {
+    justify-content: center;
+  }
+
+  .admin__btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .leaflet-bottom.leaflet-right {
+    display: none !important;
+  }
+}

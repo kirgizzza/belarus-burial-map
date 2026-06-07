@@ -1,0 +1,12 @@
+﻿[build]
+  publish = "public"
+  command = "node scripts/generate-config.js"
+
+[build.environment]
+  # На Netlify задайте в Site settings → Environment variables:
+  # SUPABASE_URL и SUPABASE_ANON_KEY
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/admin.html"
+  status = 200

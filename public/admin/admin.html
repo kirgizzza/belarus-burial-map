@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Админ панель захоронений | belarus-burial-map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <section id="login-panel" class="admin__login">
+    <div class="admin__login-card">
+      <h1 class="admin__title">Вход в админку</h1>
+      <p class="admin__subtitle">Войдите с email и паролем, созданными в Supabase</p>
+      <form id="login-form" class="admin__form">
+        <label class="admin__label" for="login-email">Email</label>
+        <input id="login-email" class="admin__input" type="email" required autocomplete="username" />
+
+        <label class="admin__label" for="login-password">Пароль</label>
+        <input id="login-password" class="admin__input" type="password" required autocomplete="current-password" />
+
+        <button class="admin__btn admin__btn--primary" type="submit">Войти</button>
+      </form>
+      <p id="login-error" class="admin__status admin__status--error" hidden></p>
+      <a class="admin__btn admin__btn--secondary" href="../index.html">← На карту</a>
+    </div>
+  </section>
+
+  <main id="admin-app" class="admin" hidden>
+    <header class="admin__header">
+      <div class="admin__header-row">
+        <div>
+          <h1 class="admin__title">Админ-панель захоронений</h1>
+          <p class="admin__subtitle">Изменения сохраняются в Supabase и сразу видны на карте</p>
+        </div>
+        <button id="logout-btn" class="admin__btn admin__btn--secondary" type="button">Выйти</button>
+      </div>
+    </header>
+
+    <section class="admin__panel">
+      <div class="admin__controls">
+        <button id="add-new" class="admin__btn admin__btn--secondary" type="button">
+          + Новое захоронение
+        </button>
+      </div>
+
+      <p class="admin__label">Список захоронений (нажмите для редактирования)</p>
+      <ul id="burial-list" class="admin__list"></ul>
+    </section>
+
+    <form id="burial-form" class="admin__panel admin__form">
+      <label class="admin__label" for="title">Название</label>
+      <input id="title" class="admin__input" name="title" type="text" required />
+
+      <label class="admin__label" for="location">Локация</label>
+      <input id="location" class="admin__input" name="location" type="text" required />
+
+      <div class="admin__coords">
+        <div>
+          <label class="admin__label" for="lat">Широта</label>
+          <input id="lat" class="admin__input" name="lat" type="number" step="any" required />
+        </div>
+        <div>
+          <label class="admin__label" for="lng">Долгота</label>
+          <input id="lng" class="admin__input" name="lng" type="number" step="any" required />
+        </div>
+      </div>
+
+      <label class="admin__label" for="description">Описание</label>
+      <textarea id="description" class="admin__textarea" name="description" rows="4"></textarea>
+
+      <p class="admin__label">Поставьте точку на карте для выбора координат</p>
+      <div id="admin-map" class="admin__map"></div>
+
+      <label class="admin__label" for="persons-lines">Список захороненных (по одному ФИО в строке)</label>
+      <textarea
+        id="persons-lines"
+        class="admin__textarea admin__textarea--mono"
+        name="persons-lines"
+        rows="6"
+        placeholder="Иванов Иван Иванович&#10;Петров Петр Петрович"
+      ></textarea>
+
+      <div class="admin__controls">
+        <button class="admin__btn admin__btn--primary" type="submit">Сохранить</button>
+        <button id="delete-current" class="admin__btn admin__btn--danger" type="button">
+          Удалить текущее
+        </button>
+        <a class="admin__btn admin__btn--secondary" href="../index.html">Открыть карту</a>
+      </div>
+    </form>
+
+    <p id="status" class="admin__status">Готово к работе</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../config.js"></script>
+  <script src="../supabase-client.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
